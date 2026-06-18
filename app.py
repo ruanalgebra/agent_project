@@ -49,7 +49,15 @@ def add_numbers(a: float, b: float) -> float:
 @tool
 def describe_image(image_path: str) -> str:
     """分析图片内容并返回描述。支持相对路径。"""
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logging.info(f"[describe_image] 收到原始路径: {image_path}")
+    logging.info(f"[describe_image] repr: {repr(image_path)}")
+    
     abs_path = os.path.abspath(image_path)
+    logging.info(f"[describe_image] 绝对路径: {abs_path}")
+    logging.info(f"[describe_image] 文件是否存在: {os.path.exists(abs_path)}")
+    
     if not os.path.exists(abs_path):
         return f"❌ 图片文件不存在：{abs_path}。请检查路径是否正确。"
     try:

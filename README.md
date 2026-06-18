@@ -32,6 +32,7 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 | **Qwen3-VL (8B Q4)** | 多模态视觉语言模型（图片理解） |
 | **Chroma** | 轻量级向量数据库（RAG 检索） |
 | **nomic-embed-text** | 文本向量化嵌入模型 |
+| **Docker + Docker Compose** | 容器化部署与环境管理 | 
 | **Python 3.10+** | 开发语言 |
 
 ## 📁 项目结构
@@ -200,6 +201,64 @@ GET /health —— 健康检查
 | `我的学习路径` | *你的学习路线分为三个阶段（知识库内容）* | ✅ RAG 检索增强 |
 | `我是谁` | *你是欧阳超，一名 AI 工程师…* | ✅ 多轮对话记忆 |
 
+## ⚠️ 测试注意事项
+
+### 关于图片描述功能的测试
+
+在 Windows 系统下，直接使用 `curl` 命令行发送包含中文和路径的 JSON 时，可能因转义问题导致图片路径解析失败，返回“文件不存在”。
+
+**推荐方式**：将请求体保存为 `payload.json` 文件，再通过 `curl` 发送：
+
+```bash
+# 1. 创建 payload.json
+echo {"question":"描述一下 screenshots/terminal_demo.png","session_id":"test"} > payload.json
+
+# 2. 发送请求
+curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d @payload.json
+```
+
+## ❓ 常见问题
+### 1. Docker 容器启动后反复重启
+检查容器日志：
+```bash
+    docker logs agent-api --tail 50
+```
+常见原因：app.py 语法错误或缺少依赖。修复后重新构建：
+```bash
+    docker-compose up --build -d
+```
+
+### 2. 容器内访问不了宿主机的 Ollama
+确保 Ollama 监听 0.0.0.0：
+```bash
+    set OLLAMA_HOST=0.0.0.0
+    ollama serve
+```
+并在 .env 中正确设置 OLLAMA_BASE_URL 为宿主机 IP。
+
+### 3. 图片描述返回“文件不存在”
+·确认 screenshots/ 目录已正确挂载（Docker Compose 已默认挂载）
+·确认图片文件确实存在于该目录
+·使用 payload.json 方式发送请求（见上方说明）
+
+### 4. 如何切换模型？
+修改 .env 中的 OLLAMA_MODEL 变量，然后重启服务：
+```bash
+    docker-compose down
+    docker-compose up -d
+```
+确保新模型已在 Ollama 中下载：
+```bash
+    ollama pull <新模型名>
+```
+
+### 5. 端口被占用
+修改 .env 中的 PORT 变量，或直接修改 docker-compose.yaml 中的端口映射：
+```yaml
+    ports:
+    - "8001:8000"   # 将宿主机端口改为 8001
+```
+
 ## 📌 后续规划（迭代方向）
 
 - ✅ 基础 Agent 框架（工具调用 + RAG + 多模态视觉）
@@ -214,7 +273,12 @@ GET /health —— 健康检查
 - ⏳ 结构化日志（Loguru）替代 print 调试
 - ⏳ CI/CD 流水线（GitHub Actions）
 
-------------------------------------------------------------------------
-
 ## 📄 License
     MIT © 2026 阮晨希
+
+## 🤝 贡献与反馈
+    欢迎通过 Issue 或 Pull Request 提出改进建议。
+
+------------------------------------------------------------------------
+
+
