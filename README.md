@@ -37,26 +37,29 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 ## 📁 项目结构
 
     agent_project/
-    ├── chroma_db/              # Chroma 向量数据库持久化目录
-    ├── knowledge_base/         # 源数据库，文本文件或pdf等
-        └──test.txt
-    ├── screenshots/            # 运行效果截图/测试图
-        ├── terminal_demo.png
-        ├── terminal_demo_v2.png
-        ├── terminal_demo_v3.png
-        └── terminal_demo_v4.png
-    ├── agent_with_memory.py    # 短期记忆程序
-    ├── app.py                  # FastAPI 服务版（主程序）
-    ├── build_vector_store.py   # 构建知识库程序
-    ├── config.py               # 配置文件（模型名、路径、端口等）
-    ├── first_agent.py          # 终端版 Agent（原始版本）
-    ├── README.md               # 文档 
-    └── requirements.txt        # 依赖清单
+    ├── app.py # FastAPI 服务版（主程序）
+    ├── config.py # 配置文件（支持环境变量）
+    ├── first_agent.py # 终端版 Agent（原始版本）
+    ├── agent_with_memory.py # 短期记忆程序
+    ├── build_vector_store.py # 构建知识库程序
+    ├── requirements.txt # 依赖清单
+    ├── Dockerfile # Docker 镜像构建文件
+    ├── docker-compose.yaml # Docker Compose 一键部署
+    ├── .env.example # 环境变量配置模板
+    ├── chroma_db/ # Chroma 向量数据库持久化目录
+    ├── screenshots/ # 运行效果截图/测试图
+    │ ├── terminal_demo.png
+    │ ├── terminal_demo_v2.png
+    │ ├── terminal_demo_v3.png
+    │ └── terminal_demo_v4.png
+    └── README.md # 文档
         
 
 ## 🚀 快速开始
 
-### 1. 环境准备
+### 方式一：本地运行
+
+#### 1. 环境准备
 
     # 克隆项目（或直接下载代码）
     git clone <your-repo-url>
@@ -71,7 +74,7 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
     # 安装依赖
     pip install -r requirements.txt
 
-### 2. 启动 Ollama 服务
+#### 2. 启动 Ollama 服务
 
     # 启动 Ollama 服务（确保已安装）
     ollama serve
@@ -80,26 +83,29 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
     ollama pull qwen3-vl:8b-instruct-q4_K_M   # 多模态视觉模型
     ollama pull nomic-embed-text               # 向量化嵌入模型
 
-### 3. 准备知识库（可选）
+#### 3. 准备知识库（可选）
 
-将你的文本文档（`.txt` / `.md`）放入 `./chroma_db`
-目录，程序启动时会自动加载并建立向量索引。若当前无文档，RAG
-功能将返回"未找到相关信息"。
+将你的文本文档（`.txt` / `.md`）放入 放在任意目录下，然后运行 `build_vector_store.py` 构建向量索引：
 
-### 4. 运行 Agent
+```bash
+python build_vector_store.py
+```
+该脚本会读取指定目录下的文本文件，生成向量并存入 chroma_db/ 目录。如果你不需要 RAG 功能，可以跳过此步。
+
+#### 4. 运行 Agent
 
     python first_agent.py
 
 在终端中输入问题，Agent 会自动调用相应工具或检索知识库。
 
-### 5. 启动 HTTP 服务
+#### 5. 启动 HTTP 服务
 
 ```bash
     python app.py
 ```
 服务默认运行在 http://localhost:8000
 
-### 6. 调用API
+#### 6. 调用API
 Post /chat —— 发送对话请求
 ```bash
     curl -X POST "http://localhost:8000/chat" \
@@ -109,6 +115,64 @@ Post /chat —— 发送对话请求
 响应示例：
 {"code":200,"data":"现在是2026年6月17日上午10点54分。","msg":"success"}
 
+GET /health —— 健康检查
+```bash
+    curl http://localhost:8000/health
+    # {"status":"ok"}
+```
+
+### 方式二：Docker 一键部署（推荐）
+
+#### 1. 克隆项目
+
+```bash
+    git clone <your-repo-url>
+    cd agent_project
+```
+
+#### 2. 配置环境变量
+
+复制 .env.example 为 .env，并修改 OLLAMA_BASE_URL 为你的宿主机 IP
+```bash
+    cp .env.example .env
+```
+```properties
+    # .env
+    OLLAMA_MODEL=qwen3-vl:8b-instruct-q4_K_M
+    EMBEDDING_MODEL=nomic-embed-text
+    OLLAMA_BASE_URL=http://192.168.x.x:11434   # 替换为你的宿主机 IP
+    PORT=8000
+    HOST=0.0.0.0
+```
+
+#### 3. 启动服务
+
+```bash
+    docker-compose up -d
+```
+查看日志：
+```bash
+    docker-compose logs
+```
+停止服务:
+```bash
+    docker-compose down
+```
+
+#### 4. 测试
+```bash
+    curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d "{\"question\":\"现在几点了\",\"session_id\":\"test\"}" 
+```
+
+#### 5. 调用API
+POST /chat —— 发送对话请求
+```bash
+    curl -X POST "http://localhost:8000/chat" \
+         -H "Content-Type: application/json" \
+         -d '{"question":"现在几点了","session_id":"demo"}'
+```
+响应示例：
+{"code":200,"data":"现在是2026年6月17日上午10点54分。","msg":"success"}
 GET /health —— 健康检查
 ```bash
     curl http://localhost:8000/health
@@ -144,9 +208,13 @@ GET /health —— 健康检查
 - ✅ FastAPI 封装为 HTTP 服务
 - ✅ 多会话记忆（session_id 隔离）
 - ✅ 配置文件分离（config.py）
+- ✅ Docker 容器化部署（docker-compose）
 - ⏳ 生产级会话存储（Redis 替代内存字典）
 - ⏳ 异步接口支持（解决大图推理阻塞）
 - ⏳ 结构化日志（Loguru）替代 print 调试
-- ⏳ Docker 容器化部署（一键启动）
+- ⏳ CI/CD 流水线（GitHub Actions）
 
 ------------------------------------------------------------------------
+
+## 📄 License
+    MIT © 2026 阮晨希
