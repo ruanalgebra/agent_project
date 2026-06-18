@@ -1,0 +1,67 @@
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dylib
+*.dll
+
+# 虚拟环境
+venv/
+.venv/
+env/
+ENV/
+
+# Git 相关
+.git/
+.gitignore
+.gitattributes
+
+# IDE/编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+logs/
+*.log
+
+# 本地数据（不要打包进镜像，运行时通过挂载或下载）
+chroma_db/
+knowledge_base/
+*.db
+*.sqlite
+
+# 模型文件（不要打包，太大了！）
+.ollama/
+*.gguf
+*.bin
+*.pt
+*.pth
+*.h5
+*.onnx
+
+# 项目文档和截图（不需要在镜像中）
+screenshots/
+README.md
+LICENSE
+*.md
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker 相关（避免把 Dockerfile 自己或镜像文件打进去）
+Dockerfile
+.dockerignore
+*.tar
+*.tar.gz

@@ -78,7 +78,7 @@ def describe_image(image_path: str) -> str:
         return f"❌ 请求出错：{str(e)}"
 
 # ---------- 3. 加载知识库 (RAG) ----------
-embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
+embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url = OLLAMA_BASE_URL)
 # 注意：如果你的 chroma_db 路径变了，记得改这里
 vectorstore = Chroma(persist_directory=CHROMA_DB_PATH, embedding_function=embeddings)
 
@@ -99,6 +99,7 @@ def query_knowledge(question: str) -> str:
 llm = ChatOllama(
     model=OLLAMA_MODEL,
     temperature=0,
+    base_url = OLLAMA_BASE_URL
 )
 
 tools = [get_current_time, add_numbers, describe_image, query_knowledge]

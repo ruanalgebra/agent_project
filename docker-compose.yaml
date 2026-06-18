@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  agent-api:
+    build: .
+    container_name: agent-api
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./screenshots:/app/screenshots
+    restart: unless-stopped
