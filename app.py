@@ -19,6 +19,30 @@ import requests
 import base64
 import os
 import uvicorn
+import uuid
+import time
+
+# ---------- 日志配置 ----------
+from loguru import logger
+import sys
+from config import LOG_LEVEL
+
+# 移除默认 handler，自定义格式
+logger.remove()
+logger.add(
+    sys.stdout,
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[request_id]}</cyan> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    level=LOG_LEVEL # 使用变量
+)
+# 同时写入文件（可选）
+logger.add(
+    "logs/app.log",
+    rotation="500 MB",
+    retention="7 days",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra[request_id]} | {name}:{function}:{line} | {message}",
+    level=LOG_LEVEL # 使用变量
+)
+
 
 # ---------- 1. 初始化 FastAPI ----------
 app = FastAPI(title="多模态 AI Agent API", version="1.0")
@@ -49,14 +73,13 @@ def add_numbers(a: float, b: float) -> float:
 @tool
 def describe_image(image_path: str) -> str:
     """分析图片内容并返回描述。支持相对路径。"""
-    import logging
-    logging.basicConfig(level=logging.INFO)
-    logging.info(f"[describe_image] 收到原始路径: {image_path}")
-    logging.info(f"[describe_image] repr: {repr(image_path)}")
-    
+    # 使用 logger 替代 print，但不带 request_id（工具内部无法获取），保留基础日志
+    logger.debug(f"[describe_image] 收到原始路径: {image_path}")
+    logger.debug(f"[describe_image] repr: {repr(image_path)}")
+
     abs_path = os.path.abspath(image_path)
-    logging.info(f"[describe_image] 绝对路径: {abs_path}")
-    logging.info(f"[describe_image] 文件是否存在: {os.path.exists(abs_path)}")
+    logger.debug(f"[describe_image] 绝对路径: {abs_path}")
+    logger.debug(f"[describe_image] 文件是否存在: {os.path.exists(abs_path)}")
     
     if not os.path.exists(abs_path):
         return f"❌ 图片文件不存在：{abs_path}。请检查路径是否正确。"
@@ -144,26 +167,85 @@ session_memory = defaultdict(list)
 # ---------- 6. 定义 POST 接口 ----------
 @app.post("/chat", response_model=QueryResponse)
 async def chat(request: QueryRequest):
-    try:
-        # 这里简单处理：每次请求新建一个消息列表（为了演示无状态）
-        # 如果想加记忆，可以把 messages 存在内存字典里，但先不做复杂化
-        messages = session_memory[request.session_id]
-        # 追加当前用户问题
-        messages.append(("user", request.question))
-        # 调用 Agent
-        result = agent.invoke({"messages": messages})
-        reply = result["messages"][-1].content
-        # 追加助手回复到历史
-        messages.append(("assistant", reply))
-        # 更新存储
-        session_memory[request.session_id] = messages
-        return QueryResponse(code=200, data=reply)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # 生成请求唯一ID
+    request_id = str(uuid.uuid4())[:8]
+    # 绑定到日志上下文
+    with logger.contextualize(request_id=request_id):
+        start_time = time.time()
+        logger.info(f"收到请求 | session={request.session_id} | question='{request.question[:50]}...'")
+        try:
+            # 如果想加记忆，可以把 messages 存在内存字典里，但先不做复杂化
+            messages = session_memory[request.session_id]
+            # 追加当前用户问题
+            messages.append(("user", request.question))
 
+            # 调用 Agent，并捕获返回的响应元数据
+            result = agent.invoke({"messages": messages})
+            reply = result["messages"][-1].content
+
+            # 提取 token 使用情况（如果 Ollama 返回了 usage）
+            # LangChain 的 ChatOllama 在 AIMessage 的 response_metadata 中可能包含 token 信息
+            ai_message = result["messages"][-1]
+            usage = {}
+            if hasattr(ai_message, "response_metadata") and ai_message.response_metadata:
+                metadata = ai_message.response_metadata
+                if "token_usage" in metadata:
+                    usage = metadata["token_usage"]
+                elif "prompt_eval_count" in metadata and "eval_count" in metadata:
+                    usage = {
+                        "prompt_tokens": metadata.get("prompt_eval_count", 0),
+                        "completion_tokens": metadata.get("eval_count", 0),
+                        "total_tokens": metadata.get("prompt_eval_count", 0) + metadata.get("eval_count", 0)
+                    }
+                else:
+                    # 尝试从其他字段提取
+                    usage = {}
+            # 追加助手回复到历史
+            messages.append(("assistant", reply))
+            # 更新存储
+            session_memory[request.session_id] = messages
+            elapsed = time.time() - start_time
+            logger.info(
+                f"请求完成 | 耗时={elapsed:.3f}s | 回复长度={len(reply)} | prompt_tokens={usage.get('prompt_tokens', 'N/A')} | completion_tokens={usage.get('completion_tokens', 'N/A')} | total_tokens={usage.get('total_tokens', 'N/A')}")
+
+            return QueryResponse(code=200, data=reply)
+
+        except Exception as e:
+            elapsed = time.time() - start_time
+            logger.error(f"请求失败 | 耗时={elapsed:.3f}s | 错误={str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+# ---------- 7. 健康检查（待增强） ----------
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    status = {
+        "status": "ok",
+        "ollama": {"reachable": False, "model_loaded": False},
+        "chromadb": {"available": False}
+    }
+    # 1. 检查 Ollama 是否可达以及模型是否已加载
+    try:
+        resp = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=2)
+        if resp.status_code == 200:
+            status["ollama"]["reachable"] = True
+            models = resp.json().get("models", [])
+            for m in models:
+                if m.get("name") == OLLAMA_MODEL:
+                    status["ollama"]["model_loaded"] = True
+                    break
+    except:
+        status["ollama"]["reachable"] = False
+        status["status"] = "degraded"
+
+    # 2. 检查 ChromaDB 持久化目录是否存在
+    if os.path.exists(CHROMA_DB_PATH):
+        status["chromadb"]["available"] = True
+    else:
+        status["chromadb"]["available"] = False
+        status["status"] = "degraded"
+
+    # 如果任何依赖不可用，status 降级为 "degraded"
+    return status
 
 # ---------- 7. 启动服务（直接运行此文件）----------
 if __name__ == "__main__":

@@ -34,6 +34,7 @@ chroma_db/
 knowledge_base/
 *.db
 *.sqlite
+payload.json
 
 # 模型文件（不要打包，太大了！）
 .ollama/

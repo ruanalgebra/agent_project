@@ -1,6 +1,11 @@
 # config.py
 import os
 
+# 环境类型
+ENV = os.getenv("ENV", "development")  # development / production
+
+# 根据环境设置默认日志级别
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG" if ENV == "development" else "INFO")
 
 # 从环境变量读取，如果未设置则使用默认值
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:8b-instruct-q4_K_M")

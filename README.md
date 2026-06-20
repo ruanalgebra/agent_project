@@ -3,7 +3,7 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 
 **一个集成了视觉理解、知识库检索、工具调用与多轮对话能力的本地 AI 智能体。**
 
-## 硬件要求
+## 🖥️ 硬件要求
 
 - **推荐配置**：≥ 8GB 显存的 NVIDIA GPU（RTX 3060 / 4060 / 5060 及以上）
 - **测试环境**：RTX 5060 Ti (16GB) + 32GB 内存
@@ -21,6 +21,17 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 | 🛠️ 工具调用 (ReAct) | 支持时间查询、数学计算、图片描述等自定义工具 |
 | 💬 多轮对话记忆 | 基于 LangChain 的消息记忆机制，支持上下文理解与身份记忆 |
  
+## 📊 资源消耗参考
+
+基于实际测试（RTX 5060 Ti 16GB），各场景资源消耗如下：
+
+| 测试场景 | 显存增量 (MiB) | 总耗时 (s) | prompt_tokens | completion_tokens |
+|:---------|---------------:|-----------:|--------------:|------------------:|
+| 时间查询  | ~0             | 5.646      | 2597          | 27                |
+| 图片描述  | ~0             | 4.604      | 2640          | 308               |
+| RAG 检索  | ~0             | 1.453      | 2960          | 89                |
+
+> **说明**：显存增量指“请求本身”相对于“模型已加载状态”的额外消耗。模型加载本身占用约 8.5GB 显存，该开销在第一次请求时一次性完成，后续请求的显存增量均为 ~0 MiB。总耗时受 Prompt Cache 命中率影响，连续请求耗时更短。
 
 ## 📦 技术栈
 
@@ -119,7 +130,17 @@ Post /chat —— 发送对话请求
 GET /health —— 健康检查
 ```bash
     curl http://localhost:8000/health
-    # {"status":"ok"}
+    ```json
+        {
+          "status": "ok",
+          "ollama": {"reachable": true, "model_loaded": true},
+          "chromadb": {"available": true}
+        }
+        #status: "ok" 表示一切正常，"degraded" 表示某依赖不可用
+        #ollama.reachable: Ollama 服务是否可达
+        #ollama.model_loaded: 指定模型是否已加载
+        #chromadb.available: Chroma 向量数据库目录是否存在
+    ```
 ```
 
 ### 方式二：Docker 一键部署（推荐）
@@ -177,7 +198,17 @@ POST /chat —— 发送对话请求
 GET /health —— 健康检查
 ```bash
     curl http://localhost:8000/health
-    # {"status":"ok"}
+    ```json
+        {
+          "status": "ok",
+          "ollama": {"reachable": true, "model_loaded": true},
+          "chromadb": {"available": true}
+        }
+        #status: "ok" 表示一切正常，"degraded" 表示某依赖不可用
+        #ollama.reachable: Ollama 服务是否可达
+        #ollama.model_loaded: 指定模型是否已加载
+        #chromadb.available: Chroma 向量数据库目录是否存在
+    ```
 ```
 
 ## 📸 运行效果
