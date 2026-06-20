@@ -1,7 +1,13 @@
 # 🧠 多模态 AI 智能体
 Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 
+[![CI](https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml/badge.svg)](https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml)
+
 **一个集成了视觉理解、知识库检索、工具调用与多轮对话能力的本地 AI 智能体。**
+
+
+---
+
 
 ## 🖥️ 硬件要求
 
@@ -12,6 +18,10 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 - **最低运行**：6GB 显存（需限制上下文长度）
 - **4GB 显存**：无法运行 8B 模型，建议改用 Qwen3-VL-2B 或 API 中转方案
 
+
+---
+
+
 ## ✨ 核心能力
 
 | 能力 | 说明 |
@@ -20,7 +30,11 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 | 📚 知识库问答 (RAG) | 基于 Chroma 向量数据库 + 本地文档，实现检索增强生成 |
 | 🛠️ 工具调用 (ReAct) | 支持时间查询、数学计算、图片描述等自定义工具 |
 | 💬 多轮对话记忆 | 基于 LangChain 的消息记忆机制，支持上下文理解与身份记忆 |
- 
+
+
+---
+
+
 ## 📊 资源消耗参考
 
 基于实际测试（RTX 5060 Ti 16GB），各场景资源消耗如下：
@@ -32,6 +46,10 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 | RAG 检索  | ~0             | 1.453      | 2960          | 89                |
 
 > **说明**：显存增量指“请求本身”相对于“模型已加载状态”的额外消耗。模型加载本身占用约 8.5GB 显存，该开销在第一次请求时一次性完成，后续请求的显存增量均为 ~0 MiB。总耗时受 Prompt Cache 命中率影响，连续请求耗时更短。
+
+
+---
+
 
 ## 📦 技术栈
 
@@ -46,11 +64,19 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
 | **Docker + Docker Compose** | 容器化部署与环境管理 | 
 | **Python 3.10+** | 开发语言 |
 
+
+---
+
+
 ## 📁 项目结构
 
     agent_project/
+    ├── .github/
+    │ └── workflows/
+    │ └── ci.yml # GitHub Actions CI 配置
     ├── app.py # FastAPI 服务版（主程序）
     ├── config.py # 配置文件（支持环境变量）
+    ├── test_app.py # pytest 测试用例
     ├── first_agent.py # 终端版 Agent（原始版本）
     ├── agent_with_memory.py # 短期记忆程序
     ├── build_vector_store.py # 构建知识库程序
@@ -58,6 +84,8 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
     ├── Dockerfile # Docker 镜像构建文件
     ├── docker-compose.yaml # Docker Compose 一键部署
     ├── .env.example # 环境变量配置模板
+    ├── .gitignore # Git 忽略规则
+    ├── .dockerignore # Docker 构建忽略规则
     ├── chroma_db/ # Chroma 向量数据库持久化目录
     ├── screenshots/ # 运行效果截图/测试图
     │ ├── terminal_demo.png
@@ -66,6 +94,9 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
     │ └── terminal_demo_v4.png
     └── README.md # 文档
         
+
+---
+
 
 ## 🚀 快速开始
 
@@ -165,6 +196,10 @@ GET /health —— 健康检查
     OLLAMA_BASE_URL=http://192.168.x.x:11434   # 替换为你的宿主机 IP
     PORT=8000
     HOST=0.0.0.0
+
+    # 环境与日志配置
+    ENV=development          # development / production
+    LOG_LEVEL=DEBUG          # DEBUG / INFO / WARNING / ERROR
 ```
 
 #### 3. 启动服务
@@ -211,6 +246,27 @@ GET /health —— 健康检查
     ```
 ```
 
+
+---
+
+
+## 🧪 测试
+### 本地运行测试
+```bash
+    # 安装 pytest（如果尚未安装）
+    pip install pytest
+
+    # 运行所有测试
+    pytest test_app.py -v
+```
+### CI 自动化测试
+本项目已配置 GitHub Actions CI，每次 push 到 main 分支时会自动运行冒烟测试：
+https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml/badge.svg
+
+
+---
+
+
 ## 📸 运行效果
 
 ::: screenshot-placeholder
@@ -232,6 +288,10 @@ GET /health —— 健康检查
 | `我的学习路径` | *你的学习路线分为三个阶段（知识库内容）* | ✅ RAG 检索增强 |
 | `我是谁` | *你是欧阳超，一名 AI 工程师…* | ✅ 多轮对话记忆 |
 
+
+---
+
+
 ## ⚠️ 测试注意事项
 
 ### 关于图片描述功能的测试
@@ -247,6 +307,10 @@ echo {"question":"描述一下 screenshots/terminal_demo.png","session_id":"test
 # 2. 发送请求
 curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d @payload.json
 ```
+
+
+---
+
 
 ## ❓ 常见问题
 ### 1. Docker 容器启动后反复重启
@@ -290,6 +354,13 @@ curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d
     - "8001:8000"   # 将宿主机端口改为 8001
 ```
 
+### 6. CI 测试失败怎么办？
+检查 GitHub Actions 运行日志，确认是否因依赖缺失或代码语法错误导致。本地运行 pytest test_app.py -v 可以复现大部分问题。
+
+
+---
+
+
 ## 📌 后续规划（迭代方向）
 
 - ✅ 基础 Agent 框架（工具调用 + RAG + 多模态视觉）
@@ -299,10 +370,14 @@ curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d
 - ✅ 多会话记忆（session_id 隔离）
 - ✅ 配置文件分离（config.py）
 - ✅ Docker 容器化部署（docker-compose）
+- ✅ 结构化日志（Loguru）替代 print 调试
+- ✅ 增强型健康检查（依赖状态检测）
+- ✅ 多环境配置支持（ENV / LOG_LEVEL）
+- ✅ CI/CD 流水线（GitHub Actions 冒烟测试）
 - ⏳ 生产级会话存储（Redis 替代内存字典）
 - ⏳ 异步接口支持（解决大图推理阻塞）
-- ⏳ 结构化日志（Loguru）替代 print 调试
-- ⏳ CI/CD 流水线（GitHub Actions）
+- ⏳ 端到端集成测试
+- ⏳ 小车视觉 + 具身智能探索
 
 ## 📄 License
     MIT © 2026 阮晨希
