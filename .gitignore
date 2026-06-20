@@ -21,4 +21,4 @@ logs/
 .ollama/
 
 #个人测试文件
-"payload.json" 
+payload.json 
