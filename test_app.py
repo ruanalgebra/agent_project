@@ -1,8 +1,11 @@
 """
-Agent 服务测试用例
-- 冒烟测试：不依赖外部服务（Ollama），适合在 CI 中运行
-- 集成测试：需要 Ollama 服务，仅在本地手动运行
+Agent Service Test Suite
+
+Test cases are divided into two layers:
+- Smoke tests: Run in CI, no external dependencies (Ollama not required).
+- Integration tests: Require Ollama service, run only locally.
 """
+
 import pytest
 from fastapi.testclient import TestClient
 from app import app
@@ -11,22 +14,22 @@ client = TestClient(app)
 
 
 # ============================================================
-# 冒烟测试（不依赖外部服务，CI 可运行）
+# Smoke Tests (CI-ready, no external dependencies)
 # ============================================================
 
 def test_app_imports():
-    """冒烟测试：确保 app 模块可以正常导入"""
+    """Smoke test: ensure app module can be imported."""
     from app import app
     assert app is not None
 
 
 def test_health_endpoint_structure():
-    """测试 /health 接口返回结构正确（不验证实际值）"""
+    """Check /health returns expected structure (values may vary in CI)."""
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
     assert "status" in data
-    assert data["status"] in ["ok", "degraded"]   # 允许 CI 环境下为 degraded
+    assert data["status"] in ["ok", "degraded"]   # CI may report degraded
     assert "ollama" in data
     assert "chromadb" in data
     assert "reachable" in data["ollama"]
@@ -34,8 +37,11 @@ def test_health_endpoint_structure():
 
 
 def test_chat_endpoint_without_ollama():
-    """测试 /chat 接口在无 Ollama 时的行为（预期 500）"""
-    # 检查 Ollama 是否可达，如果可达则跳过此测试
+    """
+    Test /chat behavior when Ollama is unavailable (expected 500).
+    Skipped if Ollama is reachable (local development).
+    """
+    # Check if Ollama is reachable; skip if so
     try:
         import requests
         resp = requests.get("http://localhost:11434", timeout=1)
@@ -43,8 +49,8 @@ def test_chat_endpoint_without_ollama():
         pass
     else:
         if resp.status_code == 200:
-            pytest.skip("Ollama 正在运行，此测试仅适用于无 Ollama 环境")
-   
+            pytest.skip("Ollama is running; this test only applies to no-Ollama environments")
+
     response = client.post(
         "/chat",
         json={"question": "现在几点了", "session_id": "test_ci"}
@@ -53,12 +59,12 @@ def test_chat_endpoint_without_ollama():
 
 
 # ============================================================
-# 需要 Ollama 的测试（跳过，仅在本地运行）
+# Integration Tests (require Ollama, skipped by default in CI)
 # ============================================================
 
-@pytest.mark.skip(reason="需要 Ollama 服务，仅在本地运行")
+@pytest.mark.skip(reason="Requires Ollama service, run locally only")
 def test_chat_time():
-    """测试时间查询（需要 Ollama）"""
+    """Test time query (requires Ollama)."""
     response = client.post(
         "/chat",
         json={"question": "现在几点了", "session_id": "test_local"}
@@ -69,9 +75,9 @@ def test_chat_time():
     assert "时间" in data["data"] or "点" in data["data"]
 
 
-@pytest.mark.skip(reason="需要 Ollama 服务，仅在本地运行")
+@pytest.mark.skip(reason="Requires Ollama service, run locally only")
 def test_chat_math():
-    """测试数学计算（需要 Ollama）"""
+    """Test math calculation (requires Ollama)."""
     response = client.post(
         "/chat",
         json={"question": "1+1等于几", "session_id": "test_local"}
@@ -82,9 +88,9 @@ def test_chat_math():
     assert "2" in data["data"]
 
 
-@pytest.mark.skip(reason="需要 Ollama 服务，仅在本地运行")
+@pytest.mark.skip(reason="Requires Ollama service, run locally only")
 def test_chat_rag():
-    """测试 RAG 检索（需要 Ollama + Chroma）"""
+    """Test RAG retrieval (requires Ollama + Chroma)."""
     response = client.post(
         "/chat",
         json={"question": "欧阳超擅长什么", "session_id": "test_local"}
@@ -95,9 +101,9 @@ def test_chat_rag():
     assert len(data["data"]) > 0
 
 
-@pytest.mark.skip(reason="需要 Ollama 服务，仅在本地运行")
+@pytest.mark.skip(reason="Requires Ollama service, run locally only")
 def test_chat_empty_question():
-    """测试空问题（需要 Ollama）"""
+    """Test empty question handling (requires Ollama)."""
     response = client.post(
         "/chat",
         json={"question": "", "session_id": "test_ci"}
@@ -109,10 +115,10 @@ def test_chat_empty_question():
 
 
 def test_chat_missing_session():
-    """测试缺少 session_id（应使用默认值 'default'）"""
+    """Test missing session_id; should default to 'default'."""
     response = client.post(
         "/chat",
         json={"question": "现在几点了"}
     )
-    # 如果没有 Ollama，返回 500；但不应抛出 422（验证通过）
+    # Without Ollama, returns 500; but should not raise 422 (validation passed)
     assert response.status_code != 422

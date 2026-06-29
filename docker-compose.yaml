@@ -1,17 +1,39 @@
+# ============================================================
+# Docker Compose Configuration for Multimodal AI Agent
+# ============================================================
+# Services:
+#   agent-api  - FastAPI application with LangChain agent
+#
+# Environment variables are loaded from .env file.
+# ============================================================
+
 version: '3.8'
 
 services:
+  # ----------------------------------------------------------
+  # Main Agent API Service
+  # ----------------------------------------------------------
   agent-api:
     build: .
     container_name: agent-api
+    restart: unless-stopped
+
+    # Network ports
     ports:
-      - "8000:8000"
+      - "${PORT:-8000}:8000"
+
+    # Environment variables (from .env or defaults)
     environment:
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
       - OLLAMA_MODEL=${OLLAMA_MODEL}
-      - ENV=${ENV:-development}          # 新增，默认 development
-      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}    # 新增，默认 DEBUG
+      - ENV=${ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+
+    # Host resolution for container-to-host communication
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # Mounted volumes
     volumes:
       - ./chroma_db:/app/chroma_db
       - ./screenshots:/app/screenshots
-    restart: unless-stopped

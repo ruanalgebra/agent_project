@@ -9,4 +9,3 @@ python-multipart
 requests
 loguru
 pytest
-opencv-python

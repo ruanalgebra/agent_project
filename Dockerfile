@@ -1,20 +1,28 @@
-# 使用 Python 3.10 轻量镜像
+# ============================================================
+# Dockerfile for Multimodal AI Agent
+# ============================================================
+# Base: Python 3.10 slim image
+# Build: docker build -t agent-api:latest .
+# Run:   docker run -p 8000:8000 agent-api:latest
+# ============================================================
+
 FROM python:3.10-slim
 
-# 设置工作目录
+# Set working directory
 WORKDIR /app
 
-# 先复制依赖文件（利用 Docker 缓存，加快构建）
+# Copy dependency file first for better caching
 COPY requirements.txt .
 
-# 安装依赖（添加清华源加速）
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# Install dependencies with Tsinghua mirror for faster download
+RUN pip install --no-cache-dir -r requirements.txt \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 复制项目所有文件
+# Copy application code
 COPY . .
 
-# 暴露端口
+# Expose FastAPI port
 EXPOSE 8000
 
-# 启动命令
+# Start the server
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,68 +1,69 @@
-# 🧠 多模态 AI 智能体
-Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
+# 🧠 Multimodal AI Agent
+Multimodal AI Agent with Vision & RAG · Local Deployment · Full-Stack Intelligence
 
 [![CI](https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml/badge.svg)](https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml)
 
-**一个集成了视觉理解、知识库检索、工具调用与多轮对话能力的本地 AI 智能体。**
+**A local AI agent that integrates visual understanding, knowledge retrieval, tool calling, and multi-turn conversation capabilities.**
 
 
 ---
 
 
-## 🖥️ 硬件要求
+## 🖥️ Hardware Requirements
 
-- **推荐配置**：≥ 8GB 显存的 NVIDIA GPU（RTX 3060 / 4060 / 5060 及以上）
-- **测试环境**：RTX 5060 Ti (16GB) + 32GB 内存
-- **模型规格**：Qwen3-VL-8B-Instruct (Q4_K_M 量化)
-- **显存占用**：约 4.8-5.5 GB（含上下文缓存）
-- **最低运行**：6GB 显存（需限制上下文长度）
-- **4GB 显存**：无法运行 8B 模型，建议改用 Qwen3-VL-2B 或 API 中转方案
+- **Recommended**: NVIDIA GPU with ≥ 8GB VRAM (RTX 3060 / 4060 / 5060 or higher)
+- **Tested Environment**: RTX 5060 Ti (16GB) + 32GB RAM
+- **Model**: Qwen3-VL-8B-Instruct (Q4_K_M quantized)
+- **VRAM Usage**: ~4.8-5.5 GB (including context cache)
+- **Minimum**: 6GB VRAM (with context length restrictions)
+- **4GB VRAM**: Cannot run 8B models; consider Qwen3-VL-2B or API-based alternatives
 
 
 ---
 
 
-## ✨ 核心能力
+## ✨ Core Capabilities
 
-| 能力 | 说明 |
+| Capability | Description |
 |:---|:---|
-| 👁️ 视觉理解 | 基于 Qwen3-VL 多模态模型，能"看懂"图片并生成 300+ 字详细描述 |
-| 📚 知识库问答 (RAG) | 基于 Chroma 向量数据库 + 本地文档，实现检索增强生成 |
-| 🛠️ 工具调用 (ReAct) | 支持时间查询、数学计算、图片描述等自定义工具 |
-| 💬 多轮对话记忆 | 基于 LangChain 的消息记忆机制，支持上下文理解与身份记忆 |
+| 👁️ Visual Understanding | Powered by Qwen3-VL multimodal model; generates 300+ word detailed image descriptions |
+| 📚 RAG (Retrieval-Augmented Generation) | Chroma vector database + local documents for enhanced retrieval and generation |
+| 🛠️ Tool Calling (ReAct) | Custom tools for time queries, math calculations, image description, and spatial understanding |
+| 💬 Multi-turn Conversation Memory | LangChain-based message memory for context-aware and identity-aware conversations |
 
 
 ---
 
 
-## 📊 资源消耗参考
+## 📊 Resource Consumption Reference
 
-基于实际测试（RTX 5060 Ti 16GB），各场景资源消耗如下：
+Based on actual testing (RTX 5060 Ti 16GB):
 
-| 测试场景 | 显存增量 (MiB) | 总耗时 (s) | prompt_tokens | completion_tokens |
-|:---------|---------------:|-----------:|--------------:|------------------:|
-| 时间查询  | ~0             | 5.646      | 2597          | 27                |
-| 图片描述  | ~0             | 4.604      | 2640          | 308               |
-| RAG 检索  | ~0             | 1.453      | 2960          | 89                |
+| Scenario | VRAM Delta (MiB) | Total Time (s) | prompt_tokens | completion_tokens |
+|:---------|-----------------:|---------------:|--------------:|------------------:|
+| Time Query | ~0 | 5.646 | 2597 | 27 |
+| Image Description | ~0 | 4.604 | 2640 | 308 |
+| RAG Retrieval | ~0 | 1.453 | 2960 | 89 |
 
-> **说明**：显存增量指“请求本身”相对于“模型已加载状态”的额外消耗。模型加载本身占用约 8.5GB 显存，该开销在第一次请求时一次性完成，后续请求的显存增量均为 ~0 MiB。总耗时受 Prompt Cache 命中率影响，连续请求耗时更短。
+> **Note**: VRAM delta refers to the additional consumption of the request itself relative to the "model loaded" state. Model loading itself occupies ~8.5GB VRAM, completed on the first request. Subsequent requests have ~0 MiB VRAM delta. Total time is affected by Prompt Cache hit rate; consecutive requests are faster.
 
 
 ---
 
 
-## 📦 技术栈
+## 📦 Tech Stack
 
-| 组件 | 用途 |
+| Component | Purpose |
 |:---|:---|
-| **LangChain (Agent 框架)** | 工具绑定、ReAct 循环与多轮对话管理 |
-| **FastAPI + Uvicorn** | HTTP 服务封装与异步接口 |
-| **Ollama** | 本地大模型服务（支持 CPU/GPU） |
-| **Qwen3-VL (8B Q4)** | 多模态视觉语言模型（图片理解） |
-| **Chroma** | 轻量级向量数据库（RAG 检索） |
-| **nomic-embed-text** | 文本向量化嵌入模型 |
-| **Docker + Docker Compose** | 容器化部署与环境管理 | 
-| **Python 3.10+** | 开发语言 |
+| **LangChain (Agent Framework)** | Tool binding, ReAct loop, and multi-turn conversation management |
+| **FastAPI + Uvicorn** | HTTP service encapsulation and async interface |
+| **Ollama** | Local LLM serving (CPU/GPU) |
+| **Qwen3-VL (8B Q4)** | Multimodal vision-language model (image understanding) |
+| **Chroma** | Lightweight vector database (RAG retrieval) |
+| **nomic-embed-text** | Text embedding model |
+| **Docker + Docker Compose** | Containerized deployment and environment management |
+| **GitHub Actions** | CI automated testing |
+| **Python 3.10+** | Development language |
 
 
 ---
@@ -73,92 +74,91 @@ Multimodal AI Agent with Vision & RAG · 本地部署 · 全链路智能
     agent_project/
     ├── .github/
     │ └── workflows/
-    │ └── ci.yml # GitHub Actions CI 配置
-    ├── app.py # FastAPI 服务版（主程序）
-    ├── config.py # 配置文件（支持环境变量）
-    ├── test_app.py # pytest 测试用例
-    ├── first_agent.py # 终端版 Agent（原始版本）
-    ├── agent_with_memory.py # 短期记忆程序
-    ├── build_vector_store.py # 构建知识库程序
-    ├── requirements.txt # 依赖清单
-    ├── Dockerfile # Docker 镜像构建文件
-    ├── docker-compose.yaml # Docker Compose 一键部署
-    ├── .env.example # 环境变量配置模板
-    ├── .gitignore # Git 忽略规则
-    ├── .dockerignore # Docker 构建忽略规则
-    ├── chroma_db/ # Chroma 向量数据库持久化目录
-    ├── screenshots/ # 运行效果截图/测试图
+    │ └── ci.yml # GitHub Actions CI config
+    ├── app.py # FastAPI main service
+    ├── space_understand.py      # Camera capture + spatial understanding
+    ├── space_server.py          # Standalone spatial service (host machine)
+    ├── config.py # Configuration (env var support)
+    ├── test_app.py # pytest test cases
+    ├── first_agent.py # Terminal-based Agent (original)）
+    ├── agent_with_memory.py # Short-term memory program
+    ├── build_vector_store.py # Knowledge base builder
+    ├── requirements.txt # Dependencies
+    ├── Dockerfile # Docker Docker build file
+    ├── docker-compose.yaml # Docker Compose one-click deploy
+    ├── .env.example # Environment variable template
+    ├── .gitignore # Git ignore rules
+    ├── .dockerignore # Docker build ignore rules
+    ├── chroma_db/ # Chroma vector database directory
+    ├── screenshots/ # Screenshots / test images
     │ ├── terminal_demo.png
     │ ├── terminal_demo_v2.png
     │ ├── terminal_demo_v3.png
     │ └── terminal_demo_v4.png
-    └── README.md # 文档
+    └── README.md # Documentation
         
 
 ---
 
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 方式一：本地运行
+### Option 1: Local Run
 
-#### 1. 环境准备
+#### 1. Environment Setup
+```bash
+# Clone the project
+git clone <your-repo-url>
+cd agent_project
 
-    # 克隆项目（或直接下载代码）
-    git clone <your-repo-url>
-    cd agent_project
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate      # Linux/Mac
+# or
+venv\Scripts\activate         # Windows
 
-    # 创建虚拟环境（推荐）
-    python -m venv venv
-    source venv/bin/activate      # Linux/Mac
-    # 或
-    venv\Scripts\activate         # Windows
+# Install dependencies
+pip install -r requirements.txt
+```
 
-    # 安装依赖
-    pip install -r requirements.txt
+#### 2. Start Ollama Service
+```bash
+# Start Ollama (ensure it's installed)
+ollama serve
 
-#### 2. 启动 Ollama 服务
+# Pull required models (if not already downloaded)
+ollama pull qwen3-vl:8b-instruct-q4_K_M   # Multimodal vision model
+ollama pull nomic-embed-text               # Embedding model
+```
 
-    # 启动 Ollama 服务（确保已安装）
-    ollama serve
+#### 3. Prepare Knowledge Base (Optional)
 
-    # 拉取所需模型（如果尚未下载）
-    ollama pull qwen3-vl:8b-instruct-q4_K_M   # 多模态视觉模型
-    ollama pull nomic-embed-text               # 向量化嵌入模型
-
-#### 3. 准备知识库（可选）
-
-将你的文本文档（`.txt` / `.md`）放入 放在任意目录下，然后运行 `build_vector_store.py` 构建向量索引：
+Place your text documents (.txt / .md) in any directory, then run:
 
 ```bash
 python build_vector_store.py
 ```
-该脚本会读取指定目录下的文本文件，生成向量并存入 chroma_db/ 目录。如果你不需要 RAG 功能，可以跳过此步。
+This script reads text files from the specified directory, generates embeddings, and stores them in chroma_db/. Skip this step if you don't need RAG functionality.
 
-#### 4. 运行 Agent
 
-    python first_agent.py
-
-在终端中输入问题，Agent 会自动调用相应工具或检索知识库。
-
-#### 5. 启动 HTTP 服务
+#### 4. Start HTTP Service
 
 ```bash
     python app.py
 ```
-服务默认运行在 http://localhost:8000
+Service runs at http://localhost:8000
 
-#### 6. 调用API
-Post /chat —— 发送对话请求
+#### 5. Call API
+Post /chat —— Send a conversation request
 ```bash
     curl -X POST "http://localhost:8000/chat" \
          -H "Content-Type: application/json" \
-         -d '{"question":"现在几点了","session_id":"demo"}'
+         -d '{"question":"What time is it now","session_id":"demo"}'
 ```
-响应示例：
-{"code":200,"data":"现在是2026年6月17日上午10点54分。","msg":"success"}
+Response example：
+{"code":200,"data":"June 20, 2026 10:54 AM","msg":"success"}
 
-GET /health —— 健康检查
+GET /health — Enhanced health check
 ```bash
     curl http://localhost:8000/health
     ```json
@@ -167,25 +167,25 @@ GET /health —— 健康检查
           "ollama": {"reachable": true, "model_loaded": true},
           "chromadb": {"available": true}
         }
-        #status: "ok" 表示一切正常，"degraded" 表示某依赖不可用
-        #ollama.reachable: Ollama 服务是否可达
-        #ollama.model_loaded: 指定模型是否已加载
-        #chromadb.available: Chroma 向量数据库目录是否存在
+        #status: "ok" means all systems normal, "degraded" means a dependency is unavailable
+        #ollama.reachable: Whether Ollama service is reachable
+        #ollama.model_loaded: Whether the specified model is loaded
+        #chromadb.available: Whether the Chroma vector database directory exists
     ```
 ```
 
-### 方式二：Docker 一键部署（推荐）
+### Option 2: Docker One-Click Deploy (Recommended)
 
-#### 1. 克隆项目
+#### 1. Clone Project
 
 ```bash
     git clone <your-repo-url>
     cd agent_project
 ```
 
-#### 2. 配置环境变量
+#### 2. Configure Environment Variables
 
-复制 .env.example 为 .env，并修改 OLLAMA_BASE_URL 为你的宿主机 IP
+Copy .env.example to .env and modify OLLAMA_BASE_URL to your host IP:
 ```bash
     cp .env.example .env
 ```
@@ -193,197 +193,195 @@ GET /health —— 健康检查
     # .env
     OLLAMA_MODEL=qwen3-vl:8b-instruct-q4_K_M
     EMBEDDING_MODEL=nomic-embed-text
-    OLLAMA_BASE_URL=http://192.168.x.x:11434   # 替换为你的宿主机 IP
+    OLLAMA_BASE_URL=http://192.168.x.x:11434   # Replace with your host IP
     PORT=8000
     HOST=0.0.0.0
 
-    # 环境与日志配置
+    # Environment & logging config
     ENV=development          # development / production
     LOG_LEVEL=DEBUG          # DEBUG / INFO / WARNING / ERROR
 ```
 
-#### 3. 启动服务
+#### 3. Start Service
 
+ReBuild Images
+```bash
+    docker-compose build --no-cache
+```
+Docker start
 ```bash
     docker-compose up -d
 ```
-查看日志：
+View logs：
 ```bash
     docker-compose logs
 ```
-停止服务:
+Stop service:
 ```bash
     docker-compose down
 ```
 
-#### 4. 测试
+#### 4. Test
 ```bash
-    curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d "{\"question\":\"现在几点了\",\"session_id\":\"test\"}" 
+    curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d "{\"question\":\"What time is it now\",\"session_id\":\"test\"}"
 ```
 
-#### 5. 调用API
-POST /chat —— 发送对话请求
+#### 5. Call APII
+Post /chat —— Send a conversation request
 ```bash
     curl -X POST "http://localhost:8000/chat" \
          -H "Content-Type: application/json" \
-         -d '{"question":"现在几点了","session_id":"demo"}'
+         -d '{"question":"What time is it now","session_id":"demo"}'
 ```
-响应示例：
-{"code":200,"data":"现在是2026年6月17日上午10点54分。","msg":"success"}
-GET /health —— 健康检查
+Response example：
+{"code":200,"data":"June 20, 2026 10:54 AM","msg":"success"}
+
+GET /health — Enhanced health check
 ```bash
     curl http://localhost:8000/health
-    ```json
-        {
-          "status": "ok",
-          "ollama": {"reachable": true, "model_loaded": true},
-          "chromadb": {"available": true}
-        }
-        #status: "ok" 表示一切正常，"degraded" 表示某依赖不可用
-        #ollama.reachable: Ollama 服务是否可达
-        #ollama.model_loaded: 指定模型是否已加载
-        #chromadb.available: Chroma 向量数据库目录是否存在
-    ```
 ```
 
 
 ---
 
 
-## 🧪 测试
-### 本地运行测试
+## 🧪 Testing
+### Local Testing
 ```bash
-    # 安装 pytest（如果尚未安装）
+    # Install pytest (if not already installed)）
     pip install pytest
 
-    # 运行所有测试
+    # Run all tests
     pytest test_app.py -v
 ```
-### CI 自动化测试
-本项目已配置 GitHub Actions CI，每次 push 到 main 分支时会自动运行冒烟测试：
+### CI Automated Testing
+This project is configured with GitHub Actions CI. Every push to the main branch automatically runs smoke tests:
 https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml/badge.svg
 
 
 ---
 
 
-## 📸 运行效果
+## 📸 Demo
 
 ::: screenshot-placeholder
-**🖼️ API 测试截图**\
-（请将 `terminal_demo_v4.png` 放入 `screenshots/`
-目录，此处将自动显示）\
-[实际文档中请替换为真实图片]{style="font-size:0.85rem; color:#94a3b8;"}
-![API 测试截图](./screenshots/api_demo.png)
+**🖼️ API Test Screenshot**\
+(Place `terminal_demo_v4.png` in the `screenshots/` directory; it will be displayed here automatically.)\
+[Replace with actual image in the final document]{style="font-size:0.85rem; color:#94a3b8;"}
+![API Test Screenshot](./screenshots/api_demo.png)
 :::
 
-**测试用例一览：**
+**Test Cases:**
 
-| 用户输入 | Agent 输出 | 验证能力 |
+| User Input | Agent Outpu | Capability Verified |
 |:---------|:-----------|:---------|
-| `现在几点了` | *现在是2026年6月17日上午10点54分* | ✅ 工具调用（时间） |
-| `45+62=？` | *107* | ✅ 工具调用（计算） |
-| `描述一下 screenshots/terminal_demo.png` | *300+ 字详细描述（人物、服饰、背景、风格）* | ✅ 多模态视觉理解 |
-| `我是欧阳超` | *擅长视觉和边缘计算* | ✅ RAG 检索 |
-| `我的学习路径` | *你的学习路线分为三个阶段（知识库内容）* | ✅ RAG 检索增强 |
-| `我是谁` | *你是欧阳超，一名 AI 工程师…* | ✅ 多轮对话记忆 |
+| `What time is it now` | *June 20, 2026 10:54 AM* | ✅ Tool Calling (Time) |
+| `45+62=？` | *107* | ✅ Tool Calling (Math) |
+| `Describe screenshots/terminal_demo.png` | *300+ word detailed description (person, clothing, background, style)* | ✅ Multimodal Visual Understanding |
+| `I am Ouyang Chao` | *Specializes in vision and edge computing* | ✅ RAG Retrieval |
+| `What is my learning path` | *Three-stage learning path* | ✅ RAG Enhanced Retrieval |
+| `Who am I` | *You are Ouyang Chao, an AI engineer...* | ✅ Multi-turn Memory |
 
 
 ---
 
 
-## ⚠️ 测试注意事项
+## ⚠️ Testing Notes
 
-### 关于图片描述功能的测试
+### Image Description Testing
 
-在 Windows 系统下，直接使用 `curl` 命令行发送包含中文和路径的 JSON 时，可能因转义问题导致图片路径解析失败，返回“文件不存在”。
+On Windows systems, using curl directly in the command line to send JSON containing Chinese characters and paths may cause parsing issues.
 
-**推荐方式**：将请求体保存为 `payload.json` 文件，再通过 `curl` 发送：
+**Recommended approach**：Save the request body as payload.json and send via curl:
 
 ```bash
-# 1. 创建 payload.json
-echo {"question":"描述一下 screenshots/terminal_demo.png","session_id":"test"} > payload.json
+# 1. Create payload.json
+echo {"question":"Describe screenshots/terminal_demo.png","session_id":"test"} > payload.json
 
-# 2. 发送请求
+# 2. Send request
 curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d @payload.json
 ```
+### Space Server
+
+For spatial understanding (look_around), you must run space_server.py on the host machine before starting the agent.
 
 
 ---
 
 
-## ❓ 常见问题
-### 1. Docker 容器启动后反复重启
-检查容器日志：
+## ❓ FAQ
+### 1. Docker Container Restarts Repeatedly
+Check container logs:
 ```bash
     docker logs agent-api --tail 50
 ```
-常见原因：app.py 语法错误或缺少依赖。修复后重新构建：
+Common causes: syntax errors in app.py or missing dependencies. Fix and rebuild:
 ```bash
     docker-compose up --build -d
 ```
 
-### 2. 容器内访问不了宿主机的 Ollama
-确保 Ollama 监听 0.0.0.0：
+### 2. Container Cannot Access Host Ollama
+Ensure Ollama listens on 0.0.0.0:
 ```bash
     set OLLAMA_HOST=0.0.0.0
     ollama serve
 ```
-并在 .env 中正确设置 OLLAMA_BASE_URL 为宿主机 IP。
+And set OLLAMA_BASE_URL to your host IP in .env.
 
-### 3. 图片描述返回“文件不存在”
-·确认 screenshots/ 目录已正确挂载（Docker Compose 已默认挂载）
-·确认图片文件确实存在于该目录
-·使用 payload.json 方式发送请求（见上方说明）
+### 3. Image Description Returns "File Not Found"
+·Verify screenshots/ directory is mounted correctly (Docker Compose mounts it by default)
+·Verify the image file exists in that directory
+·Use the payload.json method described above
 
-### 4. 如何切换模型？
-修改 .env 中的 OLLAMA_MODEL 变量，然后重启服务：
+### 4. How to Switch Models?
+Modify OLLAMA_MODEL in .env, then restart:
 ```bash
     docker-compose down
     docker-compose up -d
 ```
-确保新模型已在 Ollama 中下载：
+Ensure the new model is downloaded in Ollama:
 ```bash
-    ollama pull <新模型名>
+    ollama pull <new_model_name>
 ```
 
-### 5. 端口被占用
-修改 .env 中的 PORT 变量，或直接修改 docker-compose.yaml 中的端口映射：
+### 5. Port Already in Use
+Modify the PORT variable in .env, or change the port mapping in docker-compose.yaml:
 ```yaml
     ports:
-    - "8001:8000"   # 将宿主机端口改为 8001
+    - "8001:8000"   # Change host port to 8001
 ```
 
-### 6. CI 测试失败怎么办？
-检查 GitHub Actions 运行日志，确认是否因依赖缺失或代码语法错误导致。本地运行 pytest test_app.py -v 可以复现大部分问题。
+### 6. CI Tests Failing
+Check GitHub Actions logs to identify whether the failure is due to missing dependencies or syntax errors. Run pytest test_app.py -v locally to reproduce most issues.
 
 
 ---
 
 
-## 📌 后续规划（迭代方向）
+## 📌 Roadmap
 
-- ✅ 基础 Agent 框架（工具调用 + RAG + 多模态视觉）
-- ✅ 时间格式优化（24h → 12h 制）
-- ✅ 图片路径支持相对路径 + 异常捕获
-- ✅ FastAPI 封装为 HTTP 服务
-- ✅ 多会话记忆（session_id 隔离）
-- ✅ 配置文件分离（config.py）
-- ✅ Docker 容器化部署（docker-compose）
-- ✅ 结构化日志（Loguru）替代 print 调试
-- ✅ 增强型健康检查（依赖状态检测）
-- ✅ 多环境配置支持（ENV / LOG_LEVEL）
-- ✅ CI/CD 流水线（GitHub Actions 冒烟测试）
-- ⏳ 生产级会话存储（Redis 替代内存字典）
-- ⏳ 异步接口支持（解决大图推理阻塞）
-- ⏳ 端到端集成测试
-- ⏳ 小车视觉 + 具身智能探索
+- ✅ Base Agent Framework (Tool Calling + RAG + Multimodal Vision)
+- ✅ Time format optimization (24h → 12h)
+- ✅ Relative path support + exception handling for images
+- ✅ FastAPI HTTP service encapsulation
+- ✅ Multi-session memory (session_id isolation)
+- ✅ Configuration separation (config.py)
+- ✅ Docker containerization (docker-compose)
+- ✅ Structured logging (Loguru) replacing print
+- ✅ Enhanced health check (dependency status detection)
+- ✅ Multi-environment support (ENV / LOG_LEVEL)
+- ✅ CI/CD pipeline (GitHub Actions smoke tests)
+- ✅ Spatial understanding (look_around tool with camera)
+- ⏳ Production-grade session storage (Redis replacing in-memory dict)
+- ⏳ Async interface support (solve large image inference blocking)
+- ⏳ End-to-end integration tests
+- ⏳ Robotics + Embodied AI exploration
 
 ## 📄 License
-    MIT © 2026 阮晨希
+    MIT © 2026 Chenxi Ruan
 
-## 🤝 贡献与反馈
-    欢迎通过 Issue 或 Pull Request 提出改进建议。
+## 🤝 Contributing & Feedback
+    Issues and Pull Requests are welcome!
 
 ------------------------------------------------------------------------
 
