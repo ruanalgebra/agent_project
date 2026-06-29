@@ -3,6 +3,7 @@ Multimodal AI Agent with Vision & RAG · Local Deployment · Full-Stack Intellig
 
 [![CI](https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml/badge.svg)](https://github.com/ruanalgebra/agent_project/actions/workflows/ci.yml)
 
+
 **A local AI agent that integrates visual understanding, knowledge retrieval, tool calling, and multi-turn conversation capabilities.**
 
 
@@ -69,7 +70,7 @@ Based on actual testing (RTX 5060 Ti 16GB):
 ---
 
 
-## 📁 项目结构
+## 📁 Project Structure
 
     agent_project/
     ├── .github/
